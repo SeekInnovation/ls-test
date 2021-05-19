@@ -1,0 +1,5 @@
+{
+  "presets": ["@nrwl/web/babel"],
+  "babelrcRoots": ["*"],
+  "plugins": ["@babel/plugin-proposal-numeric-separator"]
+}

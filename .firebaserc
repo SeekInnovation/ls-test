@@ -1,0 +1,33 @@
+{
+  "projects": {
+    "si": "seekinnovation-learningsuite",
+    "ibu": "ibu-knowledgebase",
+    "ovb": "wko-lernplattform"
+  },
+  "targets": {
+    "seekinnovation-learningsuite": {
+      "hosting": {
+        "si-prod": [
+          "seekinnovation-learningsuite"
+        ],
+        "form-editor": [
+          "si-form-editor"
+        ]
+      }
+    },
+    "ibu-knowledgebase": {
+      "hosting": {
+        "ibu-prod": [
+          "ibu-knowledgebase"
+        ]
+      }
+    },
+    "wko-lernplattform": {
+      "hosting": {
+        "ovb-admin": [
+          "ovb-admin"
+        ]
+      }
+    }
+  }
+}

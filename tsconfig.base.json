@@ -1,0 +1,33 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "resolveJsonModule": true,
+    "target": "ES5",
+    "module": "esnext",
+    "lib": ["es2017", "dom", "es2019", "ES2020"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@base/firebase": ["libs/base/firebase/src/index.ts"],
+      "@base/core": ["libs/base/core/src/index.ts"],
+      "@learning/core": ["libs/learning/core/src/index.ts"],
+      "@base/web": ["libs/base/web/src/index.ts"],
+      "@base/translations": ["libs/base/translations/src/index.ts"],
+      "@access-request": ["libs/access-request/src/index.ts"],
+      "@base/web/theme": ["libs/base/web/src/theme-material/index.tsx"],
+      "@editors/form-editor": ["libs/editors/form-editor/src/index.ts"],
+      "@theming/theme": ["libs/theming/theme/src/index.ts"],
+      "@modules/country-icons": ["libs/modules/country-icons/src/index.ts"],
+      "@si-ls/kanban": ["libs/kanban/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

@@ -1,0 +1,75 @@
+{
+  "version": 2,
+  "cli": { "defaultCollection": "@nrwl/react" },
+  "defaultProject": "ovb-mobile",
+  "generators": { "@nrwl/react": { "application": { "style": "scss", "linter": "eslint", "babel": true }, "component": { "style": "scss" }, "library": { "style": "scss", "linter": "eslint" } } },
+  "projects": {
+    "theming-theme": {
+      "root": "libs/theming/theme",
+      "sourceRoot": "libs/theming/theme/src",
+      "projectType": "library",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/web:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/theming/theme",
+            "tsConfig": "libs/theming/theme/tsconfig.lib.json",
+            "project": "libs/theming/theme/package.json",
+            "entryFile": "libs/theming/theme/src/index.ts",
+            "external": ["react", "react-dom"],
+            "babelConfig": "@nrwl/react/plugins/bundle-babel",
+            "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
+            "assets": [{ "glob": "README.md", "input": ".", "output": "." }]
+          }
+        },
+        "lint": { "executor": "@nrwl/linter:eslint", "options": { "lintFilePatterns": ["libs/theming/theme/**/*.{ts,tsx,js,jsx}"] } },
+        "test": { "executor": "@nrwl/jest:jest", "outputs": ["coverage/libs/theming/theme"], "options": { "jestConfig": "libs/theming/theme/jest.config.js", "passWithNoTests": true } },
+        "storybook": {
+          "executor": "@nrwl/storybook:storybook",
+          "options": { "uiFramework": "@storybook/react", "port": 4400, "config": { "configFolder": "libs/theming/theme/.storybook" } },
+          "configurations": { "ci": { "quiet": true } }
+        },
+        "build-storybook": {
+          "executor": "@nrwl/storybook:build",
+          "outputs": ["{options.outputPath}"],
+          "options": { "uiFramework": "@storybook/react", "outputPath": "dist/storybook/theming-theme", "config": { "configFolder": "libs/theming/theme/.storybook" } },
+          "configurations": { "ci": { "quiet": true } }
+        }
+      }
+    },
+    "kanban": {
+      "root": "libs/kanban",
+      "sourceRoot": "libs/kanban/src",
+      "projectType": "library",
+      "targets": {
+        "lint": { "executor": "@nrwl/linter:eslint", "options": { "lintFilePatterns": ["libs/kanban/**/*.{ts,tsx,js,jsx}"] } },
+        "test": { "executor": "@nrwl/jest:jest", "outputs": ["coverage/libs/kanban"], "options": { "jestConfig": "libs/kanban/jest.config.js", "passWithNoTests": true } },
+        "storybook": {
+          "executor": "@nrwl/storybook:storybook",
+          "options": { "uiFramework": "@storybook/react", "port": 4400, "config": { "configFolder": "libs/kanban/.storybook" } },
+          "configurations": { "ci": { "quiet": true } }
+        },
+        "build-storybook": {
+          "executor": "@nrwl/storybook:build",
+          "outputs": ["{options.outputPath}"],
+          "options": { "uiFramework": "@storybook/react", "outputPath": "dist/storybook/kanban", "config": { "configFolder": "libs/kanban/.storybook" } },
+          "configurations": { "ci": { "quiet": true } }
+        }
+      }
+    },
+    "kanban-e2e": {
+      "root": "apps/kanban-e2e",
+      "sourceRoot": "apps/kanban-e2e/src",
+      "projectType": "application",
+      "targets": {
+        "e2e": {
+          "executor": "@nrwl/cypress:cypress",
+          "options": { "cypressConfig": "apps/kanban-e2e/cypress.json", "tsConfig": "apps/kanban-e2e/tsconfig.e2e.json", "devServerTarget": "kanban:storybook" },
+          "configurations": { "ci": { "devServerTarget": "kanban:storybook:ci" } }
+        },
+        "lint": { "executor": "@nrwl/linter:eslint", "options": { "lintFilePatterns": ["apps/kanban-e2e/**/*.{js,ts}"] } }
+      }
+    }
+  }
+}

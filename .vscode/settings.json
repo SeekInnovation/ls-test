@@ -1,0 +1,11 @@
+{
+  "deepscan.enable": true,
+  "search.exclude": {
+    "**/.yarn": true,
+    "**/.pnp.*": true
+  },
+  "i18n-ally.localesPaths": "libs/base/translations/src/translations",
+  "i18n-ally.keystyle": "nested",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "i18n-ally.sourceLanguage": "en"
+}
