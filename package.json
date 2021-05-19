@@ -5,7 +5,7 @@
   "author": "SeekInnovation",
   "scripts": {
     "nx": "nx",
-    "start": "nx serve",
+    "start": "nx storybook kanban",
     "build": "nx build",
     "test": "nx test",
     "lint": "nx workspace-lint && nx lint",
