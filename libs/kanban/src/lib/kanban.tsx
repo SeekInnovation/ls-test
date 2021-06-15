@@ -1,106 +1,30 @@
 import { Button, Card, CardContent, Checkbox, Paper, Stack, Typography } from '@material-ui/core';
-import React, { useCallback, useReducer, Dispatch, useMemo, useState } from 'react';
+import React, { Dispatch, useCallback, useMemo, useReducer, useState } from 'react';
 import {
-  DndContext, DragEndEvent,
-  DragOverEvent, DragOverlay, DragStartEvent, KeyboardSensor,
+  DndContext,
+  DragEndEvent,
+  DragOverEvent,
+  DragOverlay,
+  DragStartEvent,
+  KeyboardSensor,
   MouseSensor,
   TouchSensor,
   useDroppable,
   useSensor,
   useSensors
 } from '@dnd-kit/core';
-import { useSortable, SortableContext } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+import { SortableContext, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 import './kanban.module.scss';
-
-type ItemType = 'Backlog' | 'Progress' | 'Done'
-
-function isItemType(data: string): data is ItemType {
-  return data === 'Backlog' || data === 'Progress' || data === 'Done'
-}
-
-type Item = {
-  text: string,
-  type: ItemType,
-}
-
-type List = {
-  items: string[]
-}
-
-type KanbanBoard = {
-  lists: Map<ItemType, List>,
-  items: Map<string, Item>
-  nextId: number,
-  dragging: string,
-}
-
-type Actions = { type: "ADD_ITEM", payload: {
-  type: ItemType,
-  }} | {
-  type: 'SWITCH_TYPE', payload: { item: string, type: ItemType },
-} | {
-  type: 'SWITCH_TYPE_CARD', payload: { item: string, target: string }
-}
-
-function reducer(state: KanbanBoard, action: Actions) {
-  switch (action.type) {
-    case 'ADD_ITEM': {
-      const id = state.nextId.toString()
-      state.items.set(id, { text: 'Hello World!', type: action.payload.type })
-      state.lists.get(action.payload.type).items.push(id)
-      state.nextId += 1
-      return { ...state }
-    }
-    case 'SWITCH_TYPE': {
-      console.log(action)
-      const { item, type } = action.payload
-      const itemObject = state.items.get(item)
-      const oldType = itemObject.type
-      console.log(itemObject)
-      if (oldType === type) {
-        return state
-      }
-      itemObject.type = type
-      const oldList = state.lists.get(oldType)
-      oldList.items = oldList.items.filter(oldItem => oldItem !== item)
-      state.lists.get(type).items.push(item)
-      console.log(state)
-      return { ...state }
-    }
-    case 'SWITCH_TYPE_CARD': {
-      const { item, target } = action.payload
-      const type = state.items.get(target).type
-      const itemObject = state.items.get(item)
-      const oldType = itemObject.type
-      console.log(itemObject)
-      if (oldType === type) {
-        return state
-      }
-      itemObject.type = type
-      const oldList = state.lists.get(oldType)
-      oldList.items = oldList.items.filter(oldItem => oldItem !== item)
-      state.lists.get(type).items.push(item)
-      console.log(state)
-      return { ...state }
-    }
-  }
-}
-
-const initialKanbanBoard: KanbanBoard = {
-  nextId: 1,
-  items: new Map(),
-  lists: new Map([["Backlog", { items: [] }], ["Progress", { items: [] }], ["Done", { items: [] }]]),
-  dragging: null,
-}
+import { actions, Actions, initialKanbanBoard, isItemType, ItemType, KanbanBoard, reducer } from './model';
+import { DefaultComponentProps, OverridableTypeMap } from '@material-ui/core/OverridableComponent';
 
 /* eslint-disable-next-line */
 export interface KanbanProps {
-  helloWorldProp: string;
 }
 
-export function Kanban({ helloWorldProp }: KanbanProps) {
+export function Kanban() {
   const [state, dispatch] = useReducer(reducer, initialKanbanBoard)
 
   const sensors = useSensors(
@@ -109,7 +33,7 @@ export function Kanban({ helloWorldProp }: KanbanProps) {
     useSensor(KeyboardSensor),
   )
 
-  const [activeId, setActiveId] = useState(null);
+  const [activeId, setActiveId] = useState<string | undefined>(undefined)
 
   const onDragStart = React.useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id)
@@ -120,24 +44,23 @@ export function Kanban({ helloWorldProp }: KanbanProps) {
       return
     }
     if (isItemType(event.over.id)) {
-      dispatch({ type: 'SWITCH_TYPE', payload: {
-          item: event.active.id,
-          type: event.over.id,
-        }})
+      dispatch(actions.switchType({ type: event.over.id, item: event.active.id }))
     }
     else {
-      dispatch({ type: 'SWITCH_TYPE_CARD', payload: {
-          item: event.active.id,
-          target: event.over.id,
-        }})
-
+      dispatch(actions.switchTypeToTypeOfOtherCard({ item: event.active.id,
+          targetCard: event.over.id,
+        }))
     }
   }, [dispatch]
   )
 
   const onDragEnd = React.useCallback((event: DragEndEvent) => {
-    setActiveId(null)
+    setActiveId(undefined)
   }, [setActiveId])
+
+  const activeText = React.useMemo(() => {
+    return activeId ? state.items[activeId].text : ''
+  }, [state, activeId])
 
   return (
     <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragOver={onDragOver}>
@@ -150,7 +73,7 @@ export function Kanban({ helloWorldProp }: KanbanProps) {
     </Paper>
     <DragOverlay>
       {activeId ? (
-        <KanbanItemRaw text={`Item ${activeId}`} />
+        <KanbanItemRaw text={activeText} />
       ): null}
     </DragOverlay>
     </DndContext>
@@ -167,13 +90,11 @@ function KanbanItem({ item, state }: { item: string, state: KanbanBoard }) {
     active
   } = useSortable({ id: item });
 
-  const itemData = React.useMemo(() => {
-    return state.items.get(item)
-  }, [state, item])
+  const itemData = state.items[item]
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: transition ?? undefined,
   };
 
   if (active === item) {
@@ -193,7 +114,11 @@ function KanbanItem({ item, state }: { item: string, state: KanbanBoard }) {
   );
 }
 
-const KanbanItemRaw = React.forwardRef(({ text, ...props }, ref) => {
+type KanbanItemRawProps = DefaultComponentProps<OverridableTypeMap> & {
+  text: string,
+}
+
+const KanbanItemRaw = React.forwardRef<HTMLDivElement, KanbanItemRawProps>(({ text, ...props }, ref) => {
   return (
     <Card ref={ref} {...props}>
       <CardContent>
@@ -206,16 +131,25 @@ const KanbanItemRaw = React.forwardRef(({ text, ...props }, ref) => {
   );
 })
 
+const cardNames = ['Hello', 'World', 'Worlds', 'Handy', 'Blocked']
+
+function getCardName(): string {
+  const name = cardNames.pop() as string
+  cardNames.unshift(name)
+  return name
+}
+
 function KanbanList({ type, dispatch, state }: { type: ItemType, dispatch: Dispatch<Actions>, state: KanbanBoard }) {
   const addItem = useCallback(() => {
-    dispatch({ type: 'ADD_ITEM', payload: { type } })
+    dispatch(actions.addItem({ type, text: getCardName() }))
   }, [dispatch, type])
 
+  const unsortedItems = state.lists[type]
   const items = useMemo(() => {
-    const items = [...state.lists.get(type).items]
-    items.sort()
+    const items = [...unsortedItems]
+    items.sort((itemA, itemB) => state.items[itemA].text.localeCompare(state.items[itemB].text))
     return items
-  }, [state, type])
+  }, [state, unsortedItems])
 
   const { setNodeRef } = useDroppable({ id: type })
 

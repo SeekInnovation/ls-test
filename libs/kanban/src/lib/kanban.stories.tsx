@@ -10,14 +10,7 @@ export default {
 
 // Generate the Template
 
-const Template: Story<ComponentProps<typeof Kanban>> = (args) => <Kanban {...args} />;
+const Template: Story<ComponentProps<typeof Kanban>> = () => <Kanban />;
 
 // Bind the Template
 export const Default = Template.bind({});
-
-// Fill the Template with default values
-Default.args = {
-  helloWorldProp: "Hello World!!!!!!!!!!!!!!"
-} as ComponentProps<typeof Kanban>;
-
-
