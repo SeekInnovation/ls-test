@@ -34,7 +34,6 @@ export default function CardWrapper({ children, data }) {
            <CardMedia
           style={{height:150}}
           image={data.image}
-          title="Contemplative Reptile"
         />
         <CardContent>
           <Stack spacing={2}>
