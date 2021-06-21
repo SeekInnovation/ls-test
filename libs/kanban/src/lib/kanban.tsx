@@ -1,17 +1,21 @@
-import { KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { Button, Grid, Stack } from '@material-ui/core';
-import React, { useState } from 'react';
-import CardItem from './Cards/CardItem';
-import CardWrapper from './Cards/CardWrapper';
-import './kanban.module.scss';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { Button, Grid } from "@material-ui/core";
+import React, { useEffect, useState } from "react";
+import CardList from "./Cards/CardList";
+import "./kanban.module.scss";
+import { getItems } from "./utils/columnItems";
 /* eslint-disable-next-line */
 export interface KanbanProps {
   helloWorldProp: string;
 }
-import {getItems} from './utils/columnItems'
 export function Kanban({ helloWorldProp }: KanbanProps) {
- 
   const [columnList, setColumnList] = useState(1);
   const itemList = getItems(columnList);
   const sensors = useSensors(
@@ -20,24 +24,50 @@ export function Kanban({ helloWorldProp }: KanbanProps) {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+  const [activeItem, setActiveItem] = useState(null);
+  const [items, setItems] = useState(null);
+  const handleDragStart = ({ active }) => {
+    console.log(active, "active");
+    setActiveItem(active.id);
+  };
+  useEffect(() => {
+    setItems(itemList);
+  }, [getItems, columnList]);
+
+  const handleDragEnd = ({ active, over }) => {
+    if (active.id !== over.id) {
+      setItems(() => {
+        const oldIndex = items.findIndex((data) => data.id === active.id);
+        const newIndex = items.findIndex((data) => data.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+    setActiveItem(null);
+  };
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={3}>
-        {itemList &&
-          itemList.map((item, index) => (
-            <Stack spacing={2} margin={5} direction="row" key={index}>
-              <CardWrapper>
-                <CardItem item={item} />
-              </CardWrapper>
-            </Stack>
-          ))}
+  
+      <DndContext
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => setActiveItem(null)}
+      >
+        {" "}
+       
 
-        <Button variant="contained" color="secondary" onClick={() => setColumnList((column) => column + 1)}>
-          Add Item
-        </Button>
-      </Grid>
-    </Grid>
+          <CardList itemList={items} />
+      
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => setColumnList((column) => column + 1)}
+            style={{marginTop:10}}
+          >
+            Add Item
+          </Button>
+       
+      </DndContext>
+
   );
 }
 
