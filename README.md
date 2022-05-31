@@ -19,9 +19,9 @@ This is a Monorepo for the LearningSuite built and distributed by SeekInnovation
 
 - Build a kanban board like in [https://minimals.cc/dashboard/kanban](https://minimals.cc/dashboard/kanban) (This is just for the looks not the functionality)
   - This is just an example of how this could look like. There are many unneccesary features.
-- For drag and drop you can use `@dnd-kit/core` ([https://docs.dndkit.com/](https://docs.dndkit.com/))
+- For drag and drop you can use `react-beautiful-dnd` ([https://docs.dndkit.com/](https://docs.dndkit.com/)) (it needs to be installed in this monorepo)
 - Drag and drop is a must have
-- Structure the current state of the columns and cards so that they could be stored in a document (NoSQL store) (actual saving and retrieving is not required)
+- Structure the current state of the columns and cards so that the state is serializable as JSON (storing and loading is not required)
   <br>
   <br>
 
