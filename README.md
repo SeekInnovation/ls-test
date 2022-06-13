@@ -1,4 +1,4 @@
-# Learningsuite Repo
+# Learningsuite Repo !IMPORTANT! You need node version 12
 
 This is a Monorepo for the LearningSuite built and distributed by SeekInnovation.
 
