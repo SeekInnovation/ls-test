@@ -24,7 +24,7 @@ Code Clarity & Strucutre is more important in this assignment then the looks of 
 
 With this test we want to figure out how well you cope with a library that you are probably not familiar with and if you understand the basics of React & TypeScript.
 
-For drag and drop you shall use `react-beautiful-dnd` ([https://docs.dndkit.com/](https://docs.dndkit.com/)) (it needs to be installed in this monorepo)
+For drag and drop you shall use `react-beautiful-dnd` ([https://github.com/atlassian/react-beautiful-dnd](https://github.com/atlassian/react-beautiful-dnd)) (it needs to be installed in this monorepo)
 
 <br/>
 
