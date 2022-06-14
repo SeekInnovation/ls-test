@@ -9,16 +9,6 @@
   },
   "affected": { "defaultBase": "master" },
   "npmScope": "si-ls",
-  "tasksRunnerOptions": {
-    "default": {
-      "runner": "@nrwl/nx-cloud",
-      "options": {
-        "accessToken": "MTQwZDQ3NWItZGYzMi00OGEyLWFkZDEtOWRjOTIxMTQ4M2ZjfHJlYWQtd3JpdGU=",
-        "cacheableOperations": ["build", "test", "lint", "e2e"],
-        "canTrackAnalytics": false,
-        "showUsageWarnings": true
-      }
-    }
-  },
+  "tasksRunnerOptions": {},
   "projects": { "theming-theme": { "tags": [] }, "kanban": { "tags": [] }, "kanban-e2e": { "tags": [], "implicitDependencies": ["kanban"] } }
 }

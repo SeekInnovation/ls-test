@@ -1,7 +1,7 @@
 {
   "version": 2,
   "cli": { "defaultCollection": "@nrwl/react" },
-  "defaultProject": "ovb-mobile",
+  "defaultProject": "kanban",
   "generators": { "@nrwl/react": { "application": { "style": "scss", "linter": "eslint", "babel": true }, "component": { "style": "scss" }, "library": { "style": "scss", "linter": "eslint" } } },
   "projects": {
     "theming-theme": {
