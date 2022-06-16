@@ -1,10 +1,17 @@
 import {Button, Card, CardContent, Checkbox, Paper, Stack, Theme, Typography} from '@material-ui/core';
-import React, {Dispatch, useCallback, useContext, useReducer} from 'react';
+import React, {CSSProperties, Dispatch, useCallback, useContext, useReducer} from 'react';
 // import {v4 as uuidv4} from 'uuid'; // TODO is there a performance difference? (like in minifying. normally not, right?)
 import * as uuid from 'uuid';
 import './kanban.module.scss';
 import {assert, JsxChildOrChildren} from './util';
-import {DragDropContext, Draggable, DraggingStyle, Droppable, DropResult, ResponderProvided} from "react-beautiful-dnd";
+import {
+  DragDropContext,
+  Draggable, DraggableStateSnapshot,
+  DraggingStyle,
+  Droppable,
+  DropResult, NotDraggingStyle,
+  ResponderProvided
+} from "react-beautiful-dnd";
 import {useTheme} from "@emotion/react";
 import '@theming/theme';
 
@@ -202,18 +209,34 @@ export function KanbanLists({lists}: { lists: KanbanList[] }) {
   );
 }
 
+function getKanbanItemStyle(style: DraggingStyle | NotDraggingStyle | undefined,
+                            snapshot: DraggableStateSnapshot): CSSProperties {
+  if (snapshot.isDropAnimating) {
+    // https://github.com/atlassian/react-beautiful-dnd/blob/master/docs/guides/drop-animation.md
+    const notDraggingStyle = style as NotDraggingStyle;
+    return {
+      ...notDraggingStyle,
+      // Apparently it is important, that this is the last property so that it overrides the 'transition' aspect.
+      transitionDuration: `0.15s`, // default is 0.34s
+    };
+  } else if (snapshot.isDragging) {
+    const draggingStyle = style as DraggingStyle;
+    draggingStyle.opacity = 0.8;
+    return draggingStyle as CSSProperties;
+  } else {
+    return style as CSSProperties;
+  }
+}
+
 function KanbanItemComponent({item, index}: { item: KanbanItem, index: number }) {
   return (
     <Draggable draggableId={item.id} index={index}>
-      {(provided, snapshot) => {
-        if (snapshot.isDragging) {
-          const draggingStyle = provided.draggableProps.style as DraggingStyle;
-          draggingStyle.opacity = 0.8;
-        }
-        return (
-          <Card ref={provided.innerRef}
-                {...provided.draggableProps}
-                {...provided.dragHandleProps}>
+      {(provided, snapshot) => (
+        <div ref={provided.innerRef}
+             {...provided.draggableProps}
+             {...provided.dragHandleProps}
+             style={getKanbanItemStyle(provided.draggableProps.style, snapshot)}>
+          <Card>
             <CardContent>
               <Stack spacing={2} direction="row" alignItems="center">
                 <Checkbox/>
@@ -221,8 +244,8 @@ function KanbanItemComponent({item, index}: { item: KanbanItem, index: number })
               </Stack>
             </CardContent>
           </Card>
-        );
-      }
+        </div>
+      )
       }
     </Draggable>
   );

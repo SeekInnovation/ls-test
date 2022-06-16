@@ -1,4 +1,4 @@
-# Learningsuite Repo !IMPORTANT! You need node version 12
+# Learningsuite Repo
 
 This is a Monorepo for the LearningSuite built and distributed by SeekInnovation.
 
@@ -45,8 +45,11 @@ For drag and drop you shall use `react-beautiful-dnd` ([https://github.com/atlas
 <br/>
 
 ## Getting Started:
+You should use the node.js version specified in `.nvmrc`.
+If you use `nvm`, `nvm use` will select it automatically.
 
-First go to the project root and run `yarn` and `yarn start`. Further reading on how to use this workspace: [NX Docs (workspace)](./docs/NX_docs.md)
+Go to the project root and run `yarn` and `yarn start`.
+Further reading on how to use this workspace: [NX Docs (workspace)](./docs/NX_docs.md)
 
 <br/>
 
