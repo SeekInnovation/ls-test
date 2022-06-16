@@ -1,5 +1,5 @@
 import {Button, Card, CardContent, Checkbox, Paper, Stack, Theme, Typography} from '@material-ui/core';
-import React, {CSSProperties, Dispatch, useCallback, useContext, useReducer} from 'react';
+import React, {CSSProperties, Dispatch, MouseEvent, useCallback, useContext, useReducer} from 'react';
 // import {v4 as uuidv4} from 'uuid'; // TODO is there a performance difference? (like in minifying. normally not, right?)
 import * as uuid from 'uuid';
 import './kanban.module.scss';
@@ -16,6 +16,8 @@ import {useTheme} from "@emotion/react";
 import '@theming/theme';
 
 export interface KanbanState {
+  // TODO maybe store items separately to able to efficiently access item only via id.
+  //  This makes it easier to address single items and is also closer to real-life situations.
   lists: KanbanList[],
 }
 
@@ -30,45 +32,39 @@ export interface KanbanList {
 export interface KanbanItem {
   id: string;
   content: string;
+  checked: boolean;
 }
 
 
 function createInitialState(): KanbanState {
+  const createItem = (content: string): KanbanItem => {
+    return {
+      id: uuid.v4(),
+      content: content,
+      checked: false,
+    }
+  }
+
   return {
     lists: [
       {
         id: "todo",
         items: [
-          {
-            id: uuid.v4(),
-            content: "Task 1",
-          },
-          {
-            id: uuid.v4(),
-            content: "Task 2",
-          },
+          createItem("Task 1"),
+          createItem("Task 2"),
         ],
       },
       {
         id: "in-progress",
         items: [
-          {
-            id: uuid.v4(),
-            content: "Task 3",
-          },
-          {
-            id: uuid.v4(),
-            content: "Task 4",
-          },
+          createItem("Task 3"),
+          createItem("Task 4"),
         ],
       },
       {
         id: "done",
         items: [
-          {
-            id: uuid.v4(),
-            content: "Task 5",
-          },
+          createItem("Task 5"),
         ],
       },
       {
@@ -85,6 +81,12 @@ type KanbanAddItemAction = {
   item: KanbanItem,
 }
 
+type KanbanUpdateItemAction = {
+  type: "updateItem",
+  itemId: string,
+  checked: boolean,
+}
+
 type KanbanMoveItemAction = {
   type: "moveItem",
   itemId: string,
@@ -94,7 +96,7 @@ type KanbanMoveItemAction = {
   targetIndex: number,
 }
 
-type KanbanAction = KanbanAddItemAction | KanbanMoveItemAction;
+type KanbanAction = KanbanAddItemAction | KanbanMoveItemAction | KanbanUpdateItemAction;
 
 // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/24509
 const KanbanActionDispatchContext = React.createContext<Dispatch<KanbanAction>>(undefined as never);
@@ -102,6 +104,8 @@ const KanbanActionDispatchContext = React.createContext<Dispatch<KanbanAction>>(
 function stateReducer(state: KanbanState, action: KanbanAction): KanbanState {
   // the following deep copy is slow, but I would use 'Structured Cloning' in an up-to-date NodeJS:
   // https://stackoverflow.com/questions/122102/what-is-the-most-efficient-way-to-deep-clone-an-object-in-javascript
+  // Naturally, merging the state with the changes to preserve as much state as possible
+  // would be more efficient but more work.
   const newState: KanbanState = JSON.parse(JSON.stringify(state));
   switch (action.type) {
     case "addItem": {
@@ -124,6 +128,19 @@ function stateReducer(state: KanbanState, action: KanbanAction): KanbanState {
 
       // then add it to the target list
       targetList.items.splice(action.targetIndex, 0, item);
+
+      return newState;
+    }
+    case "updateItem": {
+      // note: super inefficient, but whatever for this example.
+      const relevantList = newState.lists.find(value => value.items.find(item => item.id === action.itemId) !== undefined);
+      assert(relevantList !== undefined);
+
+      const item = relevantList.items.find(item => item.id === action.itemId);
+      assert(item !== undefined);
+      assert(item.id === action.itemId);
+
+      item.checked = action.checked;
 
       return newState;
     }
@@ -163,7 +180,7 @@ export function KanbanDragAndDropContext({children}: { children: JsxChildOrChild
           sourceIndex: result.source.index,
           targetListId: result.destination.droppableId,
           targetIndex: result.destination.index,
-        })
+        });
         break;
       }
       default:
@@ -229,6 +246,16 @@ function getKanbanItemStyle(style: DraggingStyle | NotDraggingStyle | undefined,
 }
 
 function KanbanItemComponent({item, index}: { item: KanbanItem, index: number }) {
+  const dispatch: Dispatch<KanbanAction> = useContext(KanbanActionDispatchContext);
+
+  function onCheckedChanged(event: React.ChangeEvent<HTMLInputElement>) {
+    dispatch({
+      type: 'updateItem',
+      itemId: item.id,
+      checked: event.target.checked,
+    });
+  }
+
   return (
     <Draggable draggableId={item.id} index={index}>
       {(provided, snapshot) => (
@@ -239,7 +266,7 @@ function KanbanItemComponent({item, index}: { item: KanbanItem, index: number })
           <Card>
             <CardContent>
               <Stack spacing={2} direction="row" alignItems="center">
-                <Checkbox/>
+                <Checkbox checked={item.checked} onChange={onCheckedChanged}/>
                 <Typography variant="h6">{item.content}</Typography>
               </Stack>
             </CardContent>
@@ -261,6 +288,7 @@ function KanbanListComponent({list}: { list: KanbanList }) {
       item: {
         id: uuid.v4(),
         content: 'Dummy add text',
+        checked: false,
       }
     });
   }
