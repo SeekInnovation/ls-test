@@ -1,9 +1,10 @@
 import {Button, Card, CardContent, Checkbox, Paper, Stack, Typography} from '@material-ui/core';
-import React, {Dispatch, useContext, useReducer} from 'react';
+import React, {Dispatch, useCallback, useContext, useReducer} from 'react';
 // import {v4 as uuidv4} from 'uuid'; // TODO is there a performance difference? (like in minifying. normally not, right?)
 import * as uuid from 'uuid';
 import './kanban.module.scss';
-import {assert} from './util';
+import {assert, JsxChildOrChildren} from './util';
+import {DragDropContext, Draggable, Droppable, DropResult, ResponderProvided} from "react-beautiful-dnd";
 
 export interface KanbanState {
   lists: KanbanList[],
@@ -61,16 +62,30 @@ function createInitialState(): KanbanState {
           },
         ],
       },
+      {
+        id: "whatever",
+        items: [],
+      },
     ]
   }
 }
 
 type KanbanAddItemAction = {
-  type: "add",
+  type: "addItem",
   targetListId: string,
   item: KanbanItem,
 }
-type KanbanAction = KanbanAddItemAction;
+
+type KanbanMoveItemAction = {
+  type: "moveItem",
+  itemId: string,
+  sourceListId: string,
+  sourceIndex: number,
+  targetListId: string,
+  targetIndex: number,
+}
+
+type KanbanAction = KanbanAddItemAction | KanbanMoveItemAction;
 
 // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/24509
 const KanbanActionDispatchContext = React.createContext<Dispatch<KanbanAction>>(undefined as never);
@@ -80,42 +95,127 @@ function stateReducer(state: KanbanState, action: KanbanAction): KanbanState {
   // https://stackoverflow.com/questions/122102/what-is-the-most-efficient-way-to-deep-clone-an-object-in-javascript
   const newState: KanbanState = JSON.parse(JSON.stringify(state));
   switch (action.type) {
-    case "add": {
+    case "addItem": {
       const relevantList = newState.lists.find(value => value.id === action.targetListId);
       assert(relevantList !== undefined);
       relevantList.items.push(action.item);
       return newState;
     }
+    case "moveItem": {
+      const sourceList = newState.lists.find(value => value.id === action.sourceListId);
+      assert(sourceList !== undefined);
+      const targetList = newState.lists.find(value => value.id === action.targetListId);
+      assert(targetList !== undefined);
+
+      const item = sourceList.items[action.sourceIndex];
+      assert(item.id === action.itemId);
+
+      // remove item first
+      sourceList.items.splice(action.sourceIndex, 1);
+
+      // then add it to the target list
+      targetList.items.splice(action.targetIndex, 0, item);
+
+      return newState;
+    }
     default:
-      throw new Error(`unknown action type ${action.type}`);
+      throw new Error();
   }
 }
 
-export function Kanban({helloWorldProp}: { helloWorldProp: string }) {
+// eslint-disable-next-line no-empty-pattern
+export function KanbanDragAndDropContext({children}: { children: JsxChildOrChildren }) {
+  const dispatch: Dispatch<KanbanAction> = useContext(KanbanActionDispatchContext);
+
+  const onBeforeCapture = useCallback(() => {
+    /*...*/
+  }, []);
+  const onBeforeDragStart = useCallback(() => {
+    /*...*/
+  }, []);
+  const onDragStart = useCallback(() => {
+    /*...*/
+  }, []);
+  const onDragUpdate = useCallback(() => {
+    /*...*/
+  }, []);
+  const onDragEnd = useCallback((result: DropResult, provided: ResponderProvided) => {
+    assert(result.combine === null);
+    if (result.destination === undefined) {
+      // unsuccessful drag
+      return;
+    }
+    switch (result.type) {
+      case "KanbanItem": {
+        dispatch({
+          type: "moveItem",
+          itemId: result.draggableId,
+          sourceListId: result.source.droppableId,
+          sourceIndex: result.source.index,
+          targetListId: result.destination.droppableId,
+          targetIndex: result.destination.index,
+        })
+        break;
+      }
+      default:
+        throw new Error();
+    }
+  }, [dispatch]);
+
+  return (
+    <DragDropContext
+      onBeforeCapture={onBeforeCapture}
+      onBeforeDragStart={onBeforeDragStart}
+      onDragStart={onDragStart}
+      onDragUpdate={onDragUpdate}
+      onDragEnd={onDragEnd}
+    >
+      {children}
+    </DragDropContext>
+  );
+}
+
+// TODO how to nicely tell typescript that an emtpy object will be passed as arg?
+// eslint-disable-next-line
+export function Kanban({}: any) {
   const [state, dispatch] = useReducer(stateReducer, null, () => createInitialState());
   return (
     <Paper sx={{paddingBottom: 4}}>
       <KanbanActionDispatchContext.Provider value={dispatch}>
-        <Stack spacing={2} margin={5} direction="row">
-          {state.lists.map((list, index) => {
-            return <KanbanListComponent key={list.id} list={list}/>
-          })}
-        </Stack>
+        <KanbanDragAndDropContext>
+          <KanbanLists lists={state.lists}/>
+        </KanbanDragAndDropContext>
       </KanbanActionDispatchContext.Provider>
     </Paper>
   );
 }
 
-function KanbanItemComponent({item}: { item: KanbanItem }) {
+export function KanbanLists({lists}: { lists: KanbanList[] }) {
   return (
-    <Card>
-      <CardContent>
-        <Stack spacing={2} direction="row" alignItems="center">
-          <Checkbox/>
-          <Typography variant="h6">{item.content}</Typography>
-        </Stack>
-      </CardContent>
-    </Card>
+    <Stack spacing={2} margin={5} direction="row">
+      {lists.map((list, index) => {
+        return <KanbanListComponent key={list.id} list={list}/>
+      })}
+    </Stack>
+  );
+}
+
+function KanbanItemComponent({item, index}: { item: KanbanItem, index: number }) {
+  return (
+    <Draggable draggableId={item.id} index={index}>
+      {(provided, snapshot) => (
+        <Card ref={provided.innerRef}
+              {...provided.draggableProps}
+              {...provided.dragHandleProps}>
+          <CardContent>
+            <Stack spacing={2} direction="row" alignItems="center">
+              <Checkbox/>
+              <Typography variant="h6">{item.content}</Typography>
+            </Stack>
+          </CardContent>
+        </Card>
+      )}
+    </Draggable>
   );
 }
 
@@ -124,7 +224,7 @@ function KanbanListComponent({list}: { list: KanbanList }) {
 
   function handleAddItem() {
     dispatch({
-      type: 'add',
+      type: 'addItem',
       targetListId: list.id,
       item: {
         id: uuid.v4(),
@@ -134,17 +234,27 @@ function KanbanListComponent({list}: { list: KanbanList }) {
   }
 
   return (
-    // TODO because of this hard-coded color, the darkMode doesn't work properly
-    <Card variant="outlined" sx={{bgcolor: 'grey.200', width: 400}}>
-      <CardContent>
-        <Stack spacing={2}>
-          {list.items.map((item, index) => {
-            return <KanbanItemComponent key={item.id} item={item}/>
-          })}
-          <Button onClick={handleAddItem}>Add item</Button>
-        </Stack>
-      </CardContent>
-    </Card>
+    // TODO does droppableId need to be unique over different types too? or is it enough to be unique among same type?
+    <Droppable droppableId={list.id} type="KanbanItem">
+      {(provided, snapshot) => (
+        <div ref={provided.innerRef} {...provided.droppableProps}>
+          {/* TODO because of this hard-coded color, the darkMode doesn't work properly */}
+          <Card variant="outlined" sx={{bgcolor: 'grey.200', width: 400}}
+            // style={{ backgroundColor: snapshot.isDraggingOver ? 'blue' : 'grey' }}
+          >
+            <CardContent>
+              <Stack spacing={2}>
+                {list.items.map((item, index) => {
+                  return <KanbanItemComponent key={item.id} item={item} index={index}/>
+                })}
+                <Button onClick={handleAddItem}>Add item</Button>
+              </Stack>
+            </CardContent>
+          </Card>
+          {provided.placeholder}
+        </div>
+      )}
+    </Droppable>
   );
 }
 

@@ -1,6 +1,9 @@
 {
   "extends": ["plugin:@nrwl/nx/react", "../../.eslintrc.json"],
   "ignorePatterns": ["!**/*"],
+  "rules": {
+    "@typescript-eslint/no-empty-function": 0
+  },
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],

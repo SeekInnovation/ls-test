@@ -17,7 +17,6 @@ export const Default = Template.bind({});
 
 // Fill the Template with default values
 Default.args = {
-  helloWorldProp: "Hello World!!!!!!!!!!!!!!"
 } as ComponentProps<typeof Kanban>;
 
 

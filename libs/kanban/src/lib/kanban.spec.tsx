@@ -5,7 +5,7 @@ import Kanban from './kanban';
 
 describe('Kanban', () => {
   it('should render successfully', () => {
-    const {baseElement} = render(<Kanban helloWorldProp="Hello there!"/>);
+    const {baseElement} = render(<Kanban />);
     expect(baseElement).toBeTruthy();
   });
 });
