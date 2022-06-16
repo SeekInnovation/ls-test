@@ -90,6 +90,14 @@ const GRADIENTS = {
 
 export type PaletteType<T extends PaletteOptions> = { light: T; dark: T };
 
+// extend Palette with custom properties
+declare module '@material-ui/core/styles' {
+  interface Palette {
+    kanbanListBackground: string;
+    kanbanListBackgroundOnDraggingOver: string;
+  }
+}
+
 const Palette = {
   // LIGHT
   light: {
@@ -175,6 +183,9 @@ const Palette = {
       hoverOpacity: 0.08,
       disabledOpacity: 0.48,
     },
+
+    kanbanListBackground: GREY[200],
+    kanbanListBackgroundOnDraggingOver: GREY[300],
   },
 
   // DARK
@@ -266,12 +277,15 @@ const Palette = {
       hoverOpacity: 0.08,
       disabledOpacity: 0.48,
     },
+
+    kanbanListBackground: GREY[800],
+    kanbanListBackgroundOnDraggingOver: GREY[700],
   },
 };
 
 function createActionColors(...keys: string[]) {
   for (const key of keys) {
-    let colors = Palette.light[key];
+    const colors = Palette.light[key];
     Palette.light[key + 'Action'] = {
       ligher: colors.main,
       light: colors.main,

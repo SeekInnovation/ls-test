@@ -1,10 +1,12 @@
-import {Button, Card, CardContent, Checkbox, Paper, Stack, Typography} from '@material-ui/core';
+import {Button, Card, CardContent, Checkbox, Paper, Stack, Theme, Typography} from '@material-ui/core';
 import React, {Dispatch, useCallback, useContext, useReducer} from 'react';
 // import {v4 as uuidv4} from 'uuid'; // TODO is there a performance difference? (like in minifying. normally not, right?)
 import * as uuid from 'uuid';
 import './kanban.module.scss';
 import {assert, JsxChildOrChildren} from './util';
-import {DragDropContext, Draggable, Droppable, DropResult, ResponderProvided} from "react-beautiful-dnd";
+import {DragDropContext, Draggable, DraggingStyle, Droppable, DropResult, ResponderProvided} from "react-beautiful-dnd";
+import {useTheme} from "@emotion/react";
+import '@theming/theme';
 
 export interface KanbanState {
   lists: KanbanList[],
@@ -141,7 +143,7 @@ export function KanbanDragAndDropContext({children}: { children: JsxChildOrChild
   }, []);
   const onDragEnd = useCallback((result: DropResult, provided: ResponderProvided) => {
     assert(result.combine === null);
-    if (result.destination === undefined) {
+    if (!result.destination) {
       // unsuccessful drag
       return;
     }
@@ -203,18 +205,25 @@ export function KanbanLists({lists}: { lists: KanbanList[] }) {
 function KanbanItemComponent({item, index}: { item: KanbanItem, index: number }) {
   return (
     <Draggable draggableId={item.id} index={index}>
-      {(provided, snapshot) => (
-        <Card ref={provided.innerRef}
-              {...provided.draggableProps}
-              {...provided.dragHandleProps}>
-          <CardContent>
-            <Stack spacing={2} direction="row" alignItems="center">
-              <Checkbox/>
-              <Typography variant="h6">{item.content}</Typography>
-            </Stack>
-          </CardContent>
-        </Card>
-      )}
+      {(provided, snapshot) => {
+        if (snapshot.isDragging) {
+          const draggingStyle = provided.draggableProps.style as DraggingStyle;
+          draggingStyle.opacity = 0.8;
+        }
+        return (
+          <Card ref={provided.innerRef}
+                {...provided.draggableProps}
+                {...provided.dragHandleProps}>
+            <CardContent>
+              <Stack spacing={2} direction="row" alignItems="center">
+                <Checkbox/>
+                <Typography variant="h6">{item.content}</Typography>
+              </Stack>
+            </CardContent>
+          </Card>
+        );
+      }
+      }
     </Draggable>
   );
 }
@@ -233,27 +242,31 @@ function KanbanListComponent({list}: { list: KanbanList }) {
     });
   }
 
+  const theme = useTheme() as Theme;
   return (
     // TODO does droppableId need to be unique over different types too? or is it enough to be unique among same type?
     <Droppable droppableId={list.id} type="KanbanItem">
-      {(provided, snapshot) => (
-        <div ref={provided.innerRef} {...provided.droppableProps}>
-          {/* TODO because of this hard-coded color, the darkMode doesn't work properly */}
-          <Card variant="outlined" sx={{bgcolor: 'grey.200', width: 400}}
-            // style={{ backgroundColor: snapshot.isDraggingOver ? 'blue' : 'grey' }}
-          >
-            <CardContent>
-              <Stack spacing={2}>
-                {list.items.map((item, index) => {
-                  return <KanbanItemComponent key={item.id} item={item} index={index}/>
-                })}
-                <Button onClick={handleAddItem}>Add item</Button>
-              </Stack>
-            </CardContent>
-          </Card>
-          {provided.placeholder}
-        </div>
-      )}
+      {(provided, snapshot) => {
+        const backgroundColor = snapshot.isDraggingOver
+          ? theme.palette.kanbanListBackgroundOnDraggingOver
+          : theme.palette.kanbanListBackground;
+        return (
+          <div ref={provided.innerRef} {...provided.droppableProps}>
+            <Card variant="outlined" sx={{bgcolor: backgroundColor, width: 300}}
+            >
+              <CardContent>
+                <Stack spacing={2}>
+                  {list.items.map((item, index) => {
+                    return <KanbanItemComponent key={item.id} item={item} index={index}/>
+                  })}
+                  {provided.placeholder}
+                  <Button onClick={handleAddItem}>Add item</Button>
+                </Stack>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      }}
     </Droppable>
   );
 }

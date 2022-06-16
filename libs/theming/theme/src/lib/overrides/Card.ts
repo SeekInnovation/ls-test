@@ -7,7 +7,7 @@ export default function Card({ theme }) {
         root: {
           boxShadow: theme.shadows[25].z16,
           borderRadius: theme.shape.borderRadiusMd,
-          position: 'relative',
+          // position: 'relative', // TODO 'relative' instead of 'block' breaks the drag'n'drop.
           zIndex: 0 // Fix Safari overflow: hidden with border radius
         }
       }

@@ -49,3 +49,9 @@ Note the cool hooks here: https://react-typescript-cheatsheet.netlify.app/docs/b
 
 # Slowly starting implementation
 I didn't like that TypeScript wasn't in strict mode, so I changed that.
+Yeah, up to the styling everything was fun and fine.
+I only spent a lot of time trying to find out why dragging the damn card to the right was rendering it behind the KanbanList.
+It worked when dragging a card to a list on the left or within the same list.
+Initially, I thought it just had to do something with the z-index. But even after I overwrote the z-index to a monstrous value, it still didn't work.
+It was a IMO faulty override in the Card stylings, using relative instead of block positioning. I returned that to the defaults.
+
