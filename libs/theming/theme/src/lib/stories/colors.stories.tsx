@@ -6,8 +6,8 @@ import React from 'react';
 
 // Generate the Template
 
-let styles = ['primary', 'secondary', 'info', 'success', 'warning', 'error', 'default'];
-let greys = [0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 500_8, 500_12, 500_16, 500_24, 500_32, 500_48, 500_56, 500_80];
+const styles = ['primary', 'secondary', 'info', 'success', 'warning', 'error', 'default'];
+const greys = [0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 500_8, 500_12, 500_16, 500_24, 500_32, 500_48, 500_56, 500_80];
 const Template = (args) => {
   const theme = useTheme();
   return (

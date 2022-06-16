@@ -33,7 +33,11 @@ import Autocomplete from './Autocomplete';
 
 // ----------------------------------------------------------------------
 
-export default function ComponentsOverrides({ theme }) {
+type ThemeProps = {
+  theme: any;
+}
+
+export default function ComponentsOverrides({ theme }: ThemeProps) {
   return merge(
     Tabs({ theme }),
     Chip({ theme }),
