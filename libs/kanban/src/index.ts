@@ -1,1 +1,1 @@
-export * from './lib/kanban';
+export * from './lib/kanban/kanban';

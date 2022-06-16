@@ -1,0 +1,13 @@
+.modal-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-item-modal {
+  width: 600px;
+  background-color: white;
+  padding: 20px;
+  z-index: 100;
+  border-radius: 12px;
+}
