@@ -23,8 +23,29 @@ I then simply removed the configuration, cos I assumed correctly that the defaul
 
 I then started the application locally using `nx storybook`.
 I started to play around with the debugging functionality of IntelliJ Ultimate, it worked very nicely out-of-the-box.
+I installed the React Dev Tools Chrome plugin to have a nice component inspector.
 
 # Learning
 Now that I learned how I can actually work with the project, I started to read the documentation and play around.
 
+Like daaaaamn, JSX is a great feature to incorporate XML-style structures in code.
 
+https://www.typescriptlang.org/docs/handbook/2/functions.html
+
+TODO inform about storybook
+https://storybook.js.org/
+
+To find out which docs to read, I inquired about the used versions using the dependency tree of `yarn list`.
+Inspecting the `yarn.lock` file would have been even more reliable I guess.
+React: 17.0.2
+
+First I read the documentation on the major concepts of React,
+then many of the 'Advanced Guides'.
+Finally I read the docs on hooks.
+I left out the testing for now. I am going to research that later.
+I won't do TDD for now while only experimenting and doing this basic assignment.
+
+Note the cool hooks here: https://react-typescript-cheatsheet.netlify.app/docs/basic/useful-hooks
+
+# Slowly starting implementation
+I didn't like that TypeScript wasn't in strict mode, so I changed that.
