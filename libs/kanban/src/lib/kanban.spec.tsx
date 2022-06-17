@@ -1,12 +1,11 @@
-import React, {Dispatch, useCallback, useContext} from 'react';
-import {render, fireEvent, screen} from '@testing-library/react';
+import React, {useCallback} from 'react';
+import {fireEvent, render, screen} from '@testing-library/react';
 import sinon from 'ts-sinon';
 
 import {Kanban, KanbanActionDispatchContext, KanbanListComponent} from './kanban';
-import {KanbanList} from "./state";
-import {assert, ReactChildOrChildren} from "./util";
+import {KanbanAddItemAction, KanbanList} from "./state";
+import {ReactChildOrChildren} from "./util";
 import {DragDropContext, DropResult, ResponderProvided} from "react-beautiful-dnd";
-import * as uuid from "uuid";
 
 describe('Kanban', () => {
   it('should render successfully', () => {
@@ -21,7 +20,7 @@ describe('Kanban', () => {
 
 // TODO should UI tests be written in such a unit-test scope or more like integration tests?
 describe('KanbanListComponent', () => {
-  it('should call dispatch to add item when add item button is clicked', async () => {
+  it('should call dispatch when adding item', async () => {
     const list: KanbanList = {
       id: "list-1",
       items: [],
@@ -38,23 +37,24 @@ describe('KanbanListComponent', () => {
     );
     expect(baseElement).toBeTruthy();
 
-    const addItemButton = await screen.findByText("Add item");
+    const startAddingItemButton = await screen.findByLabelText("start-adding-item");
+    fireEvent.click(startAddingItemButton);
+
+    const newItemContentTextfield = (await screen.findByLabelText("new-item-content")).querySelector('input');
+    fireEvent.change(newItemContentTextfield as Element, {target: {value: "new text"}});
+
+    const addItemButton = await screen.findByLabelText("add-item");
     fireEvent.click(addItemButton);
 
-    expect(dispatch.calledWith({
+    expect(dispatch.args[0][0]).toEqual({
       type: 'addItem',
       targetListId: list.id,
       item: {
         id: dispatch.args[0][0].item.id,
-        content: 'Dummy add text',
+        content: 'new text',
         checked: false,
       }
-    })).toBeTruthy();
-
-    // const newKanbanItemText = await screen.findByText("Dummy add text");
-    // expect(newKanbanItemText).toBeTruthy();
-
-    // screen.debug();
+    } as KanbanAddItemAction);
   });
 
 });

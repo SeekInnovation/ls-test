@@ -1,8 +1,19 @@
-import {Button, Card, CardContent, Checkbox, Paper, Stack, Theme, Typography} from '@material-ui/core';
-import React, {CSSProperties, Dispatch, useCallback, useContext, useReducer} from 'react';
+import {
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  IconButton,
+  Paper,
+  Stack,
+  TextField,
+  Theme,
+  Typography
+} from '@material-ui/core';
+import React, {CSSProperties, Dispatch, useCallback, useContext, useReducer, useState} from 'react';
 import * as uuid from 'uuid';
 import './kanban.module.scss';
-import {assert, ReactChildOrChildren} from './util';
+import {assert, deepCopy, ReactChildOrChildren} from './util';
 import {
   DragDropContext,
   Draggable,
@@ -17,6 +28,8 @@ import {useTheme} from "@emotion/react";
 // import '@theming/theme'; // TODO this would break the UI tests because jest/babel is not configured correctly. workaround is an ignored import on the next line
 import {lightTheme as ignoredValue} from '@theming/theme'; // workaround (as mentioned above)
 import {createInitialState, KanbanAction, KanbanItem, KanbanList, KanbanState, stateReducer} from "./state";
+import {faBan, faCheck} from "@fortawesome/pro-regular-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 
 // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/24509
@@ -100,20 +113,6 @@ function KanbanListsComponent({lists}: { lists: KanbanList[] }) {
 
 
 export function KanbanListComponent({list}: { list: KanbanList }) {
-  const dispatch: Dispatch<KanbanAction> = useContext(KanbanActionDispatchContext);
-
-  function handleAddItem() {
-    dispatch({
-      type: 'addItem',
-      targetListId: list.id,
-      item: {
-        id: uuid.v4(),
-        content: 'Dummy add text',
-        checked: false,
-      }
-    });
-  }
-
   const theme = useTheme() as Theme;
   return (
     // TODO does droppableId need to be unique over different types too? or is it enough to be unique among same type?
@@ -133,7 +132,7 @@ export function KanbanListComponent({list}: { list: KanbanList }) {
                     return <KanbanItemComponent key={item.id} item={item} index={index}/>
                   })}
                   {provided.placeholder}
-                  <Button onClick={handleAddItem}>Add item</Button>
+                  <KanbanListAddItemComponent listId={list.id}></KanbanListAddItemComponent>
                 </Stack>
               </CardContent>
             </Card>
@@ -141,6 +140,102 @@ export function KanbanListComponent({list}: { list: KanbanList }) {
         );
       }}
     </Droppable>
+  );
+}
+
+export function KanbanListAddItemComponent({listId}: { listId: string }) {
+  const dispatch: Dispatch<KanbanAction> = useContext(KanbanActionDispatchContext);
+
+  // null if **no** item is being added
+  // non-null if item is being added
+  const [newItem, setNewItem] = useState<KanbanItem | null>(null);
+  const showAddItemButton = newItem === null;
+  const showItemContentEditor = newItem !== null;
+
+  function addItemIfPossibleAndClear() {
+    if (newItem === null) {
+      // already cleared
+    } else {
+      if (newItem.content.length !== 0) {
+        dispatch({
+          type: 'addItem',
+          targetListId: listId,
+          item: newItem
+        });
+      }
+      setNewItem(null);
+    }
+  }
+
+  function clear() {
+    if (newItem === null) {
+      // already cleared
+    } else {
+      setNewItem(null);
+    }
+  }
+
+  function handleAddItemButtonClicked() {
+    if (newItem !== null) {
+      addItemIfPossibleAndClear();
+    }
+    const value: KanbanItem = {
+      id: uuid.v4(),
+      content: "",
+      checked: false,
+    };
+    setNewItem(value);
+  }
+
+  function handleContentChanged(event: React.ChangeEvent<HTMLInputElement>) {
+    assert(newItem !== null);
+    const value = deepCopy(newItem);
+    value.content = event.target.value;
+    setNewItem(value);
+  }
+
+  function handleKeypressOnTextfield(event: React.KeyboardEvent<HTMLInputElement>) {
+    assert(newItem !== null);
+    if (event.key === 'Enter') {
+      addItemIfPossibleAndClear();
+      event.preventDefault();
+    }
+  }
+
+  function handleCheckedChanged(event: React.ChangeEvent<HTMLInputElement>) {
+    assert(newItem !== null);
+    const value = deepCopy(newItem);
+    value.checked = event.target.checked;
+    setNewItem(value);
+  }
+
+  return (
+    // TODO it is not very intuitive that this component returns a fragment, how to improve this? this behavior is tightly coupled with KanbanListComponent
+    <>
+      {showItemContentEditor && (
+        <Card>
+          <CardContent>
+            <TextField id="content" label="Content" variant="standard"
+                       aria-label="new-item-content"
+                       value={newItem!.content} onChange={handleContentChanged}
+                       onKeyPress={handleKeypressOnTextfield} />
+            <Stack spacing={2} direction="row" alignItems="center">
+              <Checkbox checked={newItem!.checked} onChange={handleCheckedChanged} />
+              <IconButton aria-label="add-item" disabled={newItem!.content === ""}
+                          onClick={addItemIfPossibleAndClear}>
+                <FontAwesomeIcon icon={faCheck} width={24} height={24}/>
+              </IconButton>
+              <IconButton aria-label="clear" onClick={clear}>
+                <FontAwesomeIcon icon={faBan} width={24} height={24} />
+              </IconButton>
+            </Stack>
+          </CardContent>
+        </Card>
+      )}
+      {showAddItemButton && (
+        <Button aria-label="start-adding-item" onClick={handleAddItemButtonClicked}>Add item</Button>
+      )}
+    </>
   );
 }
 

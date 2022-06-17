@@ -1,7 +1,7 @@
 import React, {Dispatch} from 'react';
 import * as uuid from 'uuid';
 import './kanban.module.scss';
-import {assert} from "./util";
+import {assert, deepCopy} from "./util";
 
 export interface KanbanState {
   // TODO maybe store items separately to able to efficiently access item only via id.
@@ -64,13 +64,13 @@ export function createInitialState(): KanbanState {
 }
 
 
-type KanbanAddItemAction = {
+export type KanbanAddItemAction = {
   type: "addItem",
   targetListId: string,
   item: KanbanItem,
 }
 
-type KanbanUpdateItemAction = {
+export type KanbanUpdateItemAction = {
   type: "updateItem",
   itemId: string,
   checked: boolean,
@@ -88,11 +88,9 @@ export type KanbanMoveItemAction = {
 export type KanbanAction = KanbanAddItemAction | KanbanMoveItemAction | KanbanUpdateItemAction;
 
 export function stateReducer(state: KanbanState, action: KanbanAction): KanbanState {
-  // the following deep copy is slow, but I would use 'Structured Cloning' in an up-to-date NodeJS:
-  // https://stackoverflow.com/questions/122102/what-is-the-most-efficient-way-to-deep-clone-an-object-in-javascript
-  // Naturally, merging the state with the changes to preserve as much state as possible
-  // would be more efficient but more work.
-  const newState: KanbanState = JSON.parse(JSON.stringify(state));
+  // Note: Naturally, merging the state with the changes to preserve as much state as possible
+  // would be more efficient but more work. For simplicity: deep copy.
+  const newState = deepCopy(state);
   switch (action.type) {
     case "addItem": {
       const relevantList = newState.lists.find(value => value.id === action.targetListId);
