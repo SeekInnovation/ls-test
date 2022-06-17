@@ -47,11 +47,33 @@ I won't do TDD for now while only experimenting and doing this basic assignment.
 
 Note the cool hooks here: https://react-typescript-cheatsheet.netlify.app/docs/basic/useful-hooks
 
-# Slowly starting implementation
+# Implementation
 I didn't like that TypeScript wasn't in strict mode, so I changed that.
+
 Yeah, up to the styling everything was fun and fine.
 I only spent a lot of time trying to find out why dragging the damn card to the right was rendering it behind the KanbanList.
 It worked when dragging a card to a list on the left or within the same list.
 Initially, I thought it just had to do something with the z-index. But even after I overwrote the z-index to a monstrous value, it still didn't work.
 It was a IMO faulty override in the Card stylings, using relative instead of block positioning. I returned that to the defaults.
+
+I extended the `Palette` interface with custom properties for styling.
+
+# Testing
+Extending the `Palette` interface in the theming made me import it for TypeScript to be happy:
+`import '@theming/theme';`
+However, that sadly broke the UI tests, pointing to a misconfiguration of babel, which should have compiled the ts/tsx files first.
+Adding `'^.+\\.ts?$': 'ts-jest'` as transform to the `jest.config.js` of the kanban-project makes it go one step further to the `tsx` file, where it then fails because it parses it as JS again.
+I did not get it to work within 10min of reading the babel config docs, so I simply gave up because configuring a project will probably not be my forte and solving this problem should not be that relevant.
+First I just copied the relevant typing code to `util.tsx` as workaround.
+Then I saw that a import like `import {lightTheme as ignoredValue} from '@theming/theme';` is ignored by the test-runner and used that instead.
+
+Also, the testing module was not set-up to create the proper theme. Therefore the whole `palette` property was empty and it simply crashed.
+I read the docs on how to do it https://testing-library.com/docs/react-testing-library/setup/ but that would have required a proper Babel config again.
+I simply made a dirty workaround that the logic survives without a color palette and called it a day.
+
+Also, I saw that the linter is misconfigured. Running `nx lint` does not lint the `.ts/.tsx` files.
+I manually added stuff that should be errors or warnings and it did not care about it.
+I was strongly thinking of just creating a new project using a proper template that actually works... 
+that probably would have saved me hours of work but I wanted to do the work in the given assignment template as instructed.
+
 

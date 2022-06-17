@@ -1,10 +1,10 @@
 /* eslint-disable react/react-in-jsx-scope */
 import { addDecorator } from '@storybook/react';
-import { withKnobs, boolean, select } from '@storybook/addon-knobs';
+import { withKnobs, boolean } from '@storybook/addon-knobs';
 import { darkTheme, lightTheme } from '@theming/theme';
 import { ThemeProvider, createTheme } from '@material-ui/core/styles';
 import { StyledEngineProvider } from '@material-ui/styled-engine';
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 // import { withThemes } from '@react-theming/storybook-addon';
 // import { ThemeConfig } from '@base/web/theme';
 import deLocale from 'date-fns/locale/de';

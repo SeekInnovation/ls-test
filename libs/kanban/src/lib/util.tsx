@@ -1,3 +1,4 @@
+import React from "react";
 
 export function assert(condition: boolean, msg?: string): asserts condition {
   if (!condition) {
@@ -5,4 +6,5 @@ export function assert(condition: boolean, msg?: string): asserts condition {
   }
 }
 
-export type JsxChildOrChildren = JSX.Element | JSX.Element[]
+export type ReactChildOrChildren = React.ReactNode | React.ReactNode[]
+

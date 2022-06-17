@@ -1,79 +1,22 @@
 import {Button, Card, CardContent, Checkbox, Paper, Stack, Theme, Typography} from '@material-ui/core';
-import React, {CSSProperties, Dispatch, MouseEvent, useCallback, useContext, useReducer} from 'react';
-// import {v4 as uuidv4} from 'uuid'; // TODO is there a performance difference? (like in minifying. normally not, right?)
+import React, {CSSProperties, Dispatch, useCallback, useContext, useReducer} from 'react';
 import * as uuid from 'uuid';
 import './kanban.module.scss';
-import {assert, JsxChildOrChildren} from './util';
+import {assert, ReactChildOrChildren} from './util';
 import {
   DragDropContext,
-  Draggable, DraggableStateSnapshot,
+  Draggable,
+  DraggableStateSnapshot,
   DraggingStyle,
   Droppable,
-  DropResult, NotDraggingStyle,
+  DropResult,
+  NotDraggingStyle,
   ResponderProvided
 } from "react-beautiful-dnd";
 import {useTheme} from "@emotion/react";
-import '@theming/theme';
-
-export interface KanbanState {
-  // TODO maybe store items separately to able to efficiently access item only via id.
-  //  This makes it easier to address single items and is also closer to real-life situations.
-  lists: KanbanList[],
-}
-
-// TODO how to properly name components differently from relevant data structures? is 'Component'-postfix ok for UI?
-export interface KanbanList {
-  id: string;
-  items: KanbanItem[];
-}
-
-// TODO store order of items separately? they at least stored the columnOrder similarily in the DND tutorial, probably to mimick how an API would return the data.
-
-export interface KanbanItem {
-  id: string;
-  content: string;
-  checked: boolean;
-}
-
-
-function createInitialState(): KanbanState {
-  const createItem = (content: string): KanbanItem => {
-    return {
-      id: uuid.v4(),
-      content: content,
-      checked: false,
-    }
-  }
-
-  return {
-    lists: [
-      {
-        id: "todo",
-        items: [
-          createItem("Task 1"),
-          createItem("Task 2"),
-        ],
-      },
-      {
-        id: "in-progress",
-        items: [
-          createItem("Task 3"),
-          createItem("Task 4"),
-        ],
-      },
-      {
-        id: "done",
-        items: [
-          createItem("Task 5"),
-        ],
-      },
-      {
-        id: "whatever",
-        items: [],
-      },
-    ]
-  }
-}
+// import '@theming/theme'; // TODO this would break the UI tests because jest/babel is not configured correctly. workaround is an ignored import on the next line
+import {lightTheme as ignoredValue} from '@theming/theme';
+import {createInitialState, KanbanItem, KanbanList, KanbanState} from "./data";
 
 type KanbanAddItemAction = {
   type: "addItem",
@@ -99,7 +42,7 @@ type KanbanMoveItemAction = {
 type KanbanAction = KanbanAddItemAction | KanbanMoveItemAction | KanbanUpdateItemAction;
 
 // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/24509
-const KanbanActionDispatchContext = React.createContext<Dispatch<KanbanAction>>(undefined as never);
+export const KanbanActionDispatchContext = React.createContext<Dispatch<KanbanAction>>(undefined as never);
 
 function stateReducer(state: KanbanState, action: KanbanAction): KanbanState {
   // the following deep copy is slow, but I would use 'Structured Cloning' in an up-to-date NodeJS:
@@ -149,8 +92,7 @@ function stateReducer(state: KanbanState, action: KanbanAction): KanbanState {
   }
 }
 
-// eslint-disable-next-line no-empty-pattern
-export function KanbanDragAndDropContext({children}: { children: JsxChildOrChildren }) {
+export function KanbanDragAndDropContext({children}: { children: ReactChildOrChildren }) {
   const dispatch: Dispatch<KanbanAction> = useContext(KanbanActionDispatchContext);
 
   const onBeforeCapture = useCallback(() => {
@@ -209,14 +151,14 @@ export function Kanban({}: any) {
     <Paper sx={{paddingBottom: 4}}>
       <KanbanActionDispatchContext.Provider value={dispatch}>
         <KanbanDragAndDropContext>
-          <KanbanLists lists={state.lists}/>
+          <KanbanListsComponent lists={state.lists}/>
         </KanbanDragAndDropContext>
       </KanbanActionDispatchContext.Provider>
     </Paper>
   );
 }
 
-export function KanbanLists({lists}: { lists: KanbanList[] }) {
+function KanbanListsComponent({lists}: { lists: KanbanList[] }) {
   return (
     <Stack spacing={2} margin={5} direction="row">
       {lists.map((list, index) => {
@@ -278,7 +220,8 @@ function KanbanItemComponent({item, index}: { item: KanbanItem, index: number })
   );
 }
 
-function KanbanListComponent({list}: { list: KanbanList }) {
+
+export function KanbanListComponent({list}: { list: KanbanList }) {
   const dispatch: Dispatch<KanbanAction> = useContext(KanbanActionDispatchContext);
 
   function handleAddItem() {
@@ -299,8 +242,9 @@ function KanbanListComponent({list}: { list: KanbanList }) {
     <Droppable droppableId={list.id} type="KanbanItem">
       {(provided, snapshot) => {
         const backgroundColor = snapshot.isDraggingOver
-          ? theme.palette.kanbanListBackgroundOnDraggingOver
-          : theme.palette.kanbanListBackground;
+          // TODO the ?. is a workaround for the unit tests to work as documented in 'worklog.md'
+          ? theme.palette?.kanbanListBackgroundOnDraggingOver
+          : theme.palette?.kanbanListBackground;
         return (
           <div ref={provided.innerRef} {...provided.droppableProps}>
             <Card variant="outlined" sx={{bgcolor: backgroundColor, width: 300}}
