@@ -53,18 +53,6 @@ export function Kanban({}: any) {
 export function KanbanDragAndDropContext({children}: { children: ReactChildOrChildren }) {
   const dispatch: Dispatch<KanbanAction> = useContext(KanbanActionDispatchContext);
 
-  const onBeforeCapture = useCallback(() => {
-    /*...*/
-  }, []);
-  const onBeforeDragStart = useCallback(() => {
-    /*...*/
-  }, []);
-  const onDragStart = useCallback(() => {
-    /*...*/
-  }, []);
-  const onDragUpdate = useCallback(() => {
-    /*...*/
-  }, []);
   const onDragEnd = useCallback((result: DropResult, provided: ResponderProvided) => {
     assert(result.combine === null);
     if (!result.destination) {
@@ -89,13 +77,7 @@ export function KanbanDragAndDropContext({children}: { children: ReactChildOrChi
   }, [dispatch]);
 
   return (
-    <DragDropContext
-      onBeforeCapture={onBeforeCapture}
-      onBeforeDragStart={onBeforeDragStart}
-      onDragStart={onDragStart}
-      onDragUpdate={onDragUpdate}
-      onDragEnd={onDragEnd}
-    >
+    <DragDropContext onDragEnd={onDragEnd}>
       {children}
     </DragDropContext>
   );
@@ -111,7 +93,7 @@ function KanbanListsComponent({lists}: { lists: KanbanList[] }) {
   );
 }
 
-
+// TODO how to properly name components differently from relevant data structures? is 'Component'-postfix ok for UI?
 export function KanbanListComponent({list}: { list: KanbanList }) {
   const theme = useTheme() as Theme;
   return (
@@ -124,8 +106,7 @@ export function KanbanListComponent({list}: { list: KanbanList }) {
           : theme.palette?.kanbanListBackground;
         return (
           <div ref={provided.innerRef} {...provided.droppableProps}>
-            <Card variant="outlined" sx={{bgcolor: backgroundColor, width: 300}}
-            >
+            <Card variant="outlined" sx={{bgcolor: backgroundColor, width: 300}}>
               <CardContent>
                 <Stack spacing={2}>
                   {list.items.map((item, index) => {

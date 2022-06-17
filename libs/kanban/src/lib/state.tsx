@@ -9,13 +9,10 @@ export interface KanbanState {
   lists: KanbanList[],
 }
 
-// TODO how to properly name components differently from relevant data structures? is 'Component'-postfix ok for UI?
 export interface KanbanList {
   id: string;
   items: KanbanItem[];
 }
-
-// TODO store order of items separately? they at least stored the columnOrder similarily in the DND tutorial, probably to mimick how an API would return the data.
 
 export interface KanbanItem {
   id: string;
