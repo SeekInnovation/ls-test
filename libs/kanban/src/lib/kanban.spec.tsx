@@ -3,7 +3,7 @@ import {render, fireEvent, screen} from '@testing-library/react';
 import sinon from 'ts-sinon';
 
 import {Kanban, KanbanActionDispatchContext, KanbanListComponent} from './kanban';
-import {KanbanList} from "./data";
+import {KanbanList} from "./state";
 import {assert, ReactChildOrChildren} from "./util";
 import {DragDropContext, DropResult, ResponderProvided} from "react-beautiful-dnd";
 import * as uuid from "uuid";
